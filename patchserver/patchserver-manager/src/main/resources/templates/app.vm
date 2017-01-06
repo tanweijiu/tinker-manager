@@ -44,7 +44,7 @@
                     <form>
                         <div class="form-group">
                             <label for="app-name" class="form-control-label">版本号:</label>
-                            <input type="text" class="form-control" id="app-version">
+                            <input type="text" class="form-control" id="app-version" placeholder="Android的versionName">
                         </div>
 
                         <p class="text-center"><font color="#dc143c" id="err_msg"></font></p>
@@ -114,6 +114,10 @@
                 <li>
                     <a href="#springUrl('')/tester/list?appUid=$!restR.data.appInfo.uid"><i class="fa fa-fw fa-file"></i> 测试人员管理</a>
                 </li>
+
+                <div class="bt_l">
+                    <a href="https://github.com/baidao/tinker-manager" target="_blank">Fork on Github</a>
+                </div>
             </ul>
         </div>
         <!-- /.navbar-collapse -->
@@ -215,7 +219,12 @@
                         }
                     },
                     error:function(XMLHttpRequest, textStatus, errorThrown){
-                        dialog.find('.bootbox-body').html("<font color='red'>系统异常!</font>");
+                        if (XMLHttpRequest.status == 401) {
+                            window.location.href = window.location.href;
+                        }
+                        else {
+                            dialog.find('.bootbox-body').html("<font color='red'>系统异常!</font>");
+                        }
                     }
                 });
             });
@@ -261,7 +270,12 @@
                             }
                         },
                         error:function(XMLHttpRequest, textStatus, errorThrown){
-                            dialog.find('.bootbox-body').html("<font color='red'>系统异常!</font>");
+                            if (XMLHttpRequest.status == 401) {
+                                window.location.href = window.location.href;
+                            }
+                            else {
+                                dialog.find('.bootbox-body').html("<font color='red'>系统异常!</font>");
+                            }
                         }
                     });
                 });

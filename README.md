@@ -17,6 +17,8 @@ Apache License 2.0
 server
 ```
 v1.0.5 增加对debug工具的支持，在发布前可以先使用提供的debug工具调试，然后在全量发布
+v1.0.6 补全包名时不在检查重复;解决ajax提交表单登录超时报系统异常的问题
+v1.0.7 修复windows部署时路径的问题
 ```
 
 patchsdk
@@ -24,6 +26,7 @@ patchsdk
 v1.0.7 修复patchsdk空指针错误
 v1.0.8 增加对debug工具的支持
 v1.0.9 优化对debug工具的支持
+v1.1.0 修复bug增加容错处理
 ```
 
 debugtool

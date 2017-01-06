@@ -65,6 +65,9 @@ public final class PatchManager {
         if (!PatchUtils.isMainProcess(context)) {
             return;
         }
+        if (!TextUtils.isEmpty(baseUrl) && !baseUrl.endsWith("/")) {
+            baseUrl = baseUrl + "/";
+        }
         this.apm = apm;
         appInfo = new AppInfo();
         appInfo.setAppId(appId);
@@ -167,11 +170,24 @@ public final class PatchManager {
                         appInfo.getSdkVersion(), appInfo.getDeviceId(), new PatchServer.PatchServerCallback() {
                             @Override
                             public void onSuccess(int code, byte[] bytes) {
+                                if (bytes == null) {
+                                    if (patchListener != null) {
+                                        patchListener.onQueryFailure(new Exception("response is null, code=" + code));
+                                    }
+                                    return;
+                                }
                                 String response = new String(bytes);
                                 PatchInfo patchInfo = PatchUtils.convertJsonToPatchInfo(response);
-                                if (patchInfo.getCode() != 200) {
+                                if (patchInfo == null) {
                                     if (patchListener != null) {
-                                        patchListener.onQueryFailure(new Exception("code=" + patchInfo.getCode()));
+                                        patchListener.onQueryFailure(new Exception("can not parse response to object: " + response + ", code=" + code));
+                                    }
+                                    return;
+                                }
+                                int resCode = patchInfo.getCode();
+                                if (resCode != 200) {
+                                    if (patchListener != null) {
+                                        patchListener.onQueryFailure(new Exception("code=" + resCode));
                                     }
                                     return;
                                 }
@@ -220,7 +236,9 @@ public final class PatchManager {
 
                             @Override
                             public void onFailure(Exception e) {
-                                e.printStackTrace();
+                                if (e != null) {
+                                    e.printStackTrace();
+                                }
                                 if (patchListener != null) {
                                     patchListener.onQueryFailure(e);
                                 }
@@ -234,7 +252,8 @@ public final class PatchManager {
                     @Override
                     public void onSuccess(int code, byte[] bytes) {
                         if (!checkPatch(bytes, patchInfo.getData().getHash())) {
-                            Log.e(TAG, "downloaded patch's hash is wrong");
+                            Log.e(TAG, "downloaded patch's hash is wrong: " + new String(bytes));
+
                             if (patchListener != null) {
                                 patchListener.onDownloadFailure(new Exception("download patch's hash is wrong"));
                             }
@@ -323,9 +342,9 @@ public final class PatchManager {
         editor.putString(PatchManager.SP_KEY_USING_PATCH, patchPath);
         editor.apply();
         Intent intent = new Intent(context, ApplyResultService.class);
-        intent.putExtra("success", true);
+        intent.putExtra("IS_APPLY_SUCCESS", true);
         if (isDebugPatch) {
-            intent.putExtra("msg", "应用调试补丁成功");
+            intent.putExtra("MSG", "应用调试补丁成功");
         } else {
             report(patchPath, true);
         }
@@ -334,9 +353,9 @@ public final class PatchManager {
 
     public void onApplyFailure(String patchPath, String msg) {
         Intent intent = new Intent(context, ApplyResultService.class);
-        intent.putExtra("success", false);
+        intent.putExtra("IS_APPLY_SUCCESS", false);
         if (isDebugPatch) {
-            intent.putExtra("msg", "应用调试补丁失败");
+            intent.putExtra("MSG", "应用调试补丁失败");
         } else {
             report(patchPath, false);
         }
